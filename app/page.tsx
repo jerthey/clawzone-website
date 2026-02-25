@@ -244,7 +244,6 @@ export default function Clawzone() {
           <h2 className="text-6xl font-bold mb-4 transition-all" style={{ textShadow: '0 0 12px #ff69b4, 0 0 25px #ff69b4' }}>
             {heroTexts[heroIndex]}
           </h2>
-          <p className="text-2xl mb-8">{t.subtitle}</p>
           <a href="#booking" className="inline-block bg-white text-pink-600 px-10 py-4 rounded-full text-xl font-bold hover:scale-105 shadow-xl">{t.bookNow}</a>
         </div>
       </div>
