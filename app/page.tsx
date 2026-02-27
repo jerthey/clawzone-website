@@ -253,6 +253,24 @@ export default function Clawzone() {
         </div>
       </div>
 
+      {/* Photos & Videos */}
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        <div className="grid md:grid-cols-2 gap-12">
+          <div>
+            <h3 className="text-3xl font-bold mb-6 text-pink-600">{t.photos}</h3>
+            <div className="overflow-hidden rounded-3xl shadow-2xl h-[420px]">
+              <img src={photos[currentPhoto]} className="w-full h-full object-cover" alt="Store" />
+            </div>
+          </div>
+          <div>
+            <h3 className="text-3xl font-bold mb-6 text-pink-600">{t.videos}</h3>
+            <div className="aspect-video bg-black rounded-3xl overflow-hidden">
+              <iframe width="100%" height="100%" src="https://www.youtube.com/embed/3JZ_3J0r5f0" allowFullScreen />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Buy Tokens 價格表 */}
       <div className="max-w-5xl mx-auto px-6 py-12 bg-white">
         <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.buyTokens}</h2>
