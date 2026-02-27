@@ -11,10 +11,8 @@ const photos = [
   "https://i.imgur.com/nYhHJjG.jpg"
 ];
 
-// 新 Logo (卡通貓)
-const logoUrl = "https://i.imgur.com/SC834dZ.jpg";  // 你可以換成你的新 Logo
+const logoUrl = "https://i.imgur.com/SC834dZ.jpg";  // 卡通貓 Logo
 
-// 中英雙語字典
 const translations = {
   zh: {
     title: "CLAWZONE",
@@ -26,21 +24,21 @@ const translations = {
     unlimited: "Unlimited Birthday Party",
     private: "Private Party Room",
     candle: "Candle Making 手工課",
-    unlimitedDesc: "全店包場 • 無限爪機 • 適合大型生日派對",
-    privateDesc: "獨立房間 • 最多15人 • 可加購 token",
+    unlimitedDesc: "全店包場 • 無限爪機",
+    privateDesc: "獨立房間 • 最多15人",
     candleDesc: "2-3人即可開課 • 最多10人",
     unlimitedDetail: "整間店都給你！無限爪機 + Sanrio 玩具區，適合 10~25 人大型派對。",
     privateDetail: "專屬私人房間超棒！最多15人，可用贈送 token 或優惠價買更多。",
     candleDetail: "浪漫手工蠟燭體驗～ 2-3人就能開課，最多10人。",
     selectDate: "選擇派對日期",
-    green: "綠色可點擊 • 灰色為公休日（完全無法點擊）",
+    green: "綠色可點擊 • 灰色為公休日",
     book: "現在預約",
     later: "稍後再選",
     people: "人數",
     peopleRange: "人數範圍",
     confirm: "確認預約並支付 $200 定金",
     cancel: "取消",
-    hostName: "Host 名字 (派對主人)",
+    hostName: "Host 名字",
     phone: "電話號碼",
     email: "Email（會寄發票）",
     photos: "Photos",
@@ -59,21 +57,21 @@ const translations = {
     unlimited: "Unlimited Birthday Party",
     private: "Private Party Room",
     candle: "Candle Making Workshop",
-    unlimitedDesc: "Whole store rental • Unlimited claw machines • Perfect for big birthday parties",
-    privateDesc: "Private room • Up to 15 people • Can buy more tokens",
+    unlimitedDesc: "Whole store rental • Unlimited claw machines",
+    privateDesc: "Private room • Up to 15 people",
     candleDesc: "Open with 2-3 people • Max 10 people",
-    unlimitedDetail: "The whole store is yours! Unlimited claw machines + Sanrio toy zone, perfect for 10~25 people big parties.",
-    privateDetail: "Exclusive private room, amazing atmosphere! Up to 15 people, can use gift tokens or buy more at discount.",
-    candleDetail: "Romantic candle making experience~ Open with just 2-3 people, max 10 people.",
+    unlimitedDetail: "The whole store is yours! Unlimited claw machines + Sanrio toy zone.",
+    privateDetail: "Exclusive private room! Up to 15 people, can buy more tokens.",
+    candleDetail: "Romantic candle making experience~ Open with 2-3 people, max 10 people.",
     selectDate: "Select Party Date",
-    green: "Green = Clickable • Gray = Closed (Cannot click)",
+    green: "Green = Clickable • Gray = Closed",
     book: "Book Now",
     later: "Choose Later",
     people: "People",
     peopleRange: "People Range",
     confirm: "Confirm Booking & Pay $200 Deposit",
     cancel: "Cancel",
-    hostName: "Host Name (Party Host)",
+    hostName: "Host Name",
     phone: "Phone Number",
     email: "Email (Invoice will be sent)",
     photos: "Photos",
@@ -245,31 +243,13 @@ export default function Clawzone() {
         </div>
       </nav>
 
-      {/* Hero - 跑馬燈 */}
+      {/* Hero */}
       <div className="bg-gradient-to-br from-pink-500 via-purple-500 to-violet-600 text-white py-28">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h2 className="text-6xl font-bold mb-4 transition-all" style={{ textShadow: '0 0 12px #ff69b4, 0 0 25px #ff69b4' }}>
             {heroTexts[heroIndex]}
           </h2>
           <a href="#booking" className="inline-block bg-white text-pink-600 px-10 py-4 rounded-full text-xl font-bold hover:scale-105 shadow-xl">{t.bookNow}</a>
-        </div>
-      </div>
-
-      {/* Photos & Videos */}
-      <div className="max-w-6xl mx-auto px-6 py-16">
-        <div className="grid md:grid-cols-2 gap-12">
-          <div>
-            <h3 className="text-3xl font-bold mb-6 text-pink-600">{t.photos}</h3>
-            <div className="overflow-hidden rounded-3xl shadow-2xl h-[420px]">
-              <img src={photos[currentPhoto]} className="w-full h-full object-cover" alt="Store" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-3xl font-bold mb-6 text-pink-600">{t.videos}</h3>
-            <div className="aspect-video bg-black rounded-3xl overflow-hidden">
-              <iframe width="100%" height="100%" src="https://www.youtube.com/embed/3JZ_3J0r5f0" allowFullScreen />
-            </div>
-          </div>
         </div>
       </div>
 
@@ -335,7 +315,94 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* 其他部分保持不變（日曆、Modal 等） */}
+      {/* 日曆 */}
+      <div id="booking" className="bg-white py-16">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.selectDate}</h2>
+          <div className="bg-pink-50 p-8 rounded-3xl">
+            <div className="grid grid-cols-7 gap-3 text-center text-pink-600 font-bold mb-4">
+              <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+            <div className="grid grid-cols-7 gap-3">
+              {renderCalendar()}
+            </div>
+          </div>
+          <p className="text-center text-sm text-gray-500 mt-6">{t.green}</p>
+        </div>
+      </div>
+
+      {/* 預約 Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full mx-4">
+            <h3 className="text-2xl font-bold mb-6 text-center text-gray-900">預約 {selectedDate}</h3>
+            
+            <form onSubmit={handleBooking} className="space-y-5">
+              <select value={selectedMode} onChange={(e) => setSelectedMode(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900" required>
+                <option value="">選擇活動模式</option>
+                {modes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+              </select>
+
+              <input type="text" placeholder={t.hostName} value={hostName} onChange={(e) => setHostName(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900" />
+
+              <input 
+                type="tel" 
+                placeholder={t.phone}
+                value={formatPhoneDisplay(rawPhone)}
+                onChange={(e) => setRawPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                className="w-full border rounded-xl px-4 py-3 text-gray-900"
+                required 
+              />
+
+              <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900" required />
+
+              <div className="relative">
+                <input type="number" value={people} onChange={(e) => setPeople(Number(e.target.value))} min="1" max={modes.find(m => m.id === selectedMode)?.max || 25} className="w-full border rounded-xl px-4 py-3 text-gray-900 pr-16" required />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">{t.people}</span>
+              </div>
+
+              <select value={time} onChange={(e) => setTime(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900">
+                {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+
+              {error && <p className="text-red-500 text-center font-medium">{error}</p>}
+
+              <button type="submit" className="w-full bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-2xl font-bold text-xl">
+                {t.confirm}
+              </button>
+            </form>
+            <button onClick={() => setIsModalOpen(false)} className="mt-4 text-gray-500 w-full">{t.cancel}</button>
+          </div>
+        </div>
+      )}
+
+      {/* 模式詳細 Modal */}
+      {isDetailModalOpen && detailMode && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-3xl max-w-lg w-full mx-4 overflow-hidden">
+            <div className="relative">
+              <button onClick={() => setIsDetailModalOpen(false)} className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow">
+                <X className="w-6 h-6" />
+              </button>
+              <div className="h-80 bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center">
+                <detailMode.icon className="w-24 h-24 text-white" />
+              </div>
+            </div>
+            <div className="p-8">
+              <h3 className="text-3xl font-bold mb-4 text-gray-900">{detailMode.name}</h3>
+              <p className="text-gray-600 text-lg leading-relaxed">{detailMode.detail}</p>
+              <div className="mt-8 flex gap-4">
+                <button onClick={handleNowBook} className="flex-1 bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-2xl font-bold">
+                  {t.book}
+                </button>
+                <button onClick={() => setIsDetailModalOpen(false)} className="flex-1 border border-gray-300 hover:bg-gray-50 py-4 rounded-2xl font-medium text-gray-700">
+                  {t.later}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-12">
