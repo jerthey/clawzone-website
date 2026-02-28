@@ -3,16 +3,17 @@
 import { useState, useEffect } from 'react';
 import { Users, Gift, Flame, X, Globe } from 'lucide-react';
 
-const photos = [  // 店內照片輪播
+const storePhotos = [
   "https://i.imgur.com/VST9B73.jpg",
   "https://i.imgur.com/RXSP1Rm.jpg",
   "https://i.imgur.com/yJXCMg3.jpg",
   "https://i.imgur.com/nyl0Pcc.jpg",
-  "https://i.imgur.com/nYhHJjG.jpg"
+  "https://i.imgur.com/nYhHJjG.jpg",
+  "https://i.imgur.com/kjPCK.jpg",
+  "https://i.imgur.com/wTy1x.jpg"
 ];
 
-// Workshop 照片（已去浮水印）
-const workshopPhotos = [
+const candlePhotos = [
   "https://i.imgur.com/k5PQd1H.jpg",
   "https://i.imgur.com/iwDJIvw.jpg",
   "https://i.imgur.com/s1CBy0l.jpg",
@@ -58,8 +59,7 @@ const translations = {
     videos: "Videos",
     successAlert: "🎉 預約成功！\n日期：{date} {time}\n模式：{mode}\n人數：{people} 人\n我們將寄 $200 CAD 定金發票到 {email}",
     buyTokens: "Buy Tokens",
-    tokensTitle: "普通買幣價格",
-    workshopGallery: "Candle Making Workshop 作品欣賞"
+    tokensTitle: "普通買幣價格"
   },
   en: {
     title: "CLAWZONE",
@@ -92,8 +92,7 @@ const translations = {
     videos: "Videos",
     successAlert: "🎉 Booking Successful!\nDate: {date} {time}\nMode: {mode}\nPeople: {people}\nWe will send $200 CAD deposit invoice to {email}",
     buyTokens: "Buy Tokens",
-    tokensTitle: "Regular Token Prices",
-    workshopGallery: "Candle Making Workshop Gallery"
+    tokensTitle: "Regular Token Prices"
   }
 };
 
@@ -117,19 +116,19 @@ export default function Clawzone() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [detailMode, setDetailMode] = useState<any>(null);
   const [availableTimes, setAvailableTimes] = useState<string[]>(['10:00 - 12:00']);
-  const [selectedWorkshopPhoto, setSelectedWorkshopPhoto] = useState<string | null>(null);
+  const [currentGallery, setCurrentGallery] = useState<string[]>([]);
 
   const modes = [
-    { id: 'unlimited', name: t.unlimited, max: 25, min: 1, desc: t.unlimitedDesc, detail: t.unlimitedDetail, icon: Gift, color: 'bg-pink-500' },
-    { id: 'private', name: t.private, max: 15, min: 1, desc: t.privateDesc, detail: t.privateDetail, icon: Users, color: 'bg-purple-500' },
-    { id: 'candle', name: t.candle, max: 10, min: 2, desc: t.candleDesc, detail: t.candleDetail, icon: Flame, color: 'bg-orange-500' }
+    { id: 'unlimited', name: t.unlimited, max: 25, min: 1, desc: t.unlimitedDesc, detail: t.unlimitedDetail, icon: Gift, color: 'bg-pink-500', photos: storePhotos },
+    { id: 'private', name: t.private, max: 15, min: 1, desc: t.privateDesc, detail: t.privateDetail, icon: Users, color: 'bg-purple-500', photos: storePhotos },
+    { id: 'candle', name: t.candle, max: 10, min: 2, desc: t.candleDesc, detail: t.candleDetail, icon: Flame, color: 'bg-orange-500', photos: candlePhotos }
   ];
 
   const bcHolidays2026 = ['2026-01-01','2026-02-16','2026-04-03','2026-05-18','2026-07-01','2026-08-03','2026-09-07','2026-09-30','2026-10-12','2026-11-11','2026-12-25'];
 
   useEffect(() => {
     const heroTimer = setInterval(() => setHeroIndex(i => (i + 1) % 3), 3000);
-    const photoTimer = setInterval(() => setCurrentPhoto(p => (p + 1) % photos.length), 3500);
+    const photoTimer = setInterval(() => setCurrentPhoto(p => (p + 1) % storePhotos.length), 3500);
     return () => { clearInterval(heroTimer); clearInterval(photoTimer); };
   }, []);
 
@@ -172,6 +171,7 @@ export default function Clawzone() {
 
   const openDetailModal = (mode: any) => {
     setDetailMode(mode);
+    setCurrentGallery(mode.photos);
     setIsDetailModalOpen(true);
     setSelectedMode(mode.id);
   };
@@ -275,7 +275,7 @@ export default function Clawzone() {
           <div>
             <h3 className="text-3xl font-bold mb-6 text-pink-600">{t.photos}</h3>
             <div className="overflow-hidden rounded-3xl shadow-2xl h-[420px]">
-              <img src={photos[currentPhoto]} className="w-full h-full object-cover" alt="Store" />
+              <img src={storePhotos[currentPhoto]} className="w-full h-full object-cover" alt="Store" />
             </div>
           </div>
           <div>
@@ -287,30 +287,16 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* Buy Tokens 價格表 */}
+      {/* Buy Tokens */}
       <div className="max-w-5xl mx-auto px-6 py-12 bg-white">
         <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.buyTokens}</h2>
         <div className="grid md:grid-cols-5 gap-4 text-center">
-          <div className="bg-pink-50 p-6 rounded-3xl">
-            <div className="text-2xl font-bold text-gray-900">5 Tokens</div>
-            <div className="text-5xl font-bold text-pink-600">$5</div>
-          </div>
-          <div className="bg-pink-50 p-6 rounded-3xl">
-            <div className="text-2xl font-bold text-gray-900">10 Tokens</div>
-            <div className="text-5xl font-bold text-pink-600">$10</div>
-          </div>
-          <div className="bg-pink-50 p-6 rounded-3xl">
-            <div className="text-2xl font-bold text-gray-900">22 Tokens</div>
-            <div className="text-5xl font-bold text-pink-600">$20</div>
-          </div>
-          <div className="bg-pink-50 p-6 rounded-3xl">
-            <div className="text-2xl font-bold text-gray-900">60 Tokens</div>
-            <div className="text-5xl font-bold text-pink-600">$50</div>
-          </div>
-          <div className="bg-pink-50 p-6 rounded-3xl">
-            <div className="text-2xl font-bold text-gray-900">130 Tokens</div>
-            <div className="text-5xl font-bold text-pink-600">$100</div>
-          </div>
+          {[5,10,22,60,130].map((n,i) => (
+            <div key={i} className="bg-pink-50 p-6 rounded-3xl">
+              <div className="text-2xl font-bold text-gray-900">{n} Tokens</div>
+              <div className="text-5xl font-bold text-pink-600">${n}</div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -340,22 +326,6 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* Workshop Gallery */}
-      <div className="max-w-6xl mx-auto px-6 py-16 bg-white">
-        <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.workshopGallery}</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {workshopPhotos.map((photo, index) => (
-            <div
-              key={index}
-              onClick={() => setSelectedWorkshopPhoto(photo)}
-              className="cursor-pointer overflow-hidden rounded-3xl shadow-lg hover:scale-105 transition-transform"
-            >
-              <img src={photo} className="w-full h-full object-cover aspect-square" alt={`Workshop ${index + 1}`} />
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* 日曆 */}
       <div id="booking" className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-6">
@@ -372,18 +342,86 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* Workshop 大圖 Modal */}
-      {selectedWorkshopPhoto && (
-        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[70]" onClick={() => setSelectedWorkshopPhoto(null)}>
-          <div className="relative max-w-4xl w-full mx-4">
-            <button onClick={() => setSelectedWorkshopPhoto(null)} className="absolute -top-12 right-4 text-white text-4xl">&times;</button>
-            <img src={selectedWorkshopPhoto} className="w-full rounded-3xl" alt="Workshop" />
+      {/* Detail Modal - 根據模式顯示對應照片 */}
+      {isDetailModalOpen && detailMode && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-3xl max-w-5xl w-full mx-4 overflow-hidden">
+            <div className="relative">
+              <button onClick={() => setIsDetailModalOpen(false)} className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-8">
+              <h3 className="text-3xl font-bold mb-4 text-gray-900">{detailMode.name}</h3>
+              <p className="text-gray-600 text-lg leading-relaxed mb-8">{detailMode.detail}</p>
+
+              {/* 照片畫廊 */}
+              <h4 className="font-semibold text-xl mb-4">照片欣賞</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {detailMode.photos.map((photo: string, index: number) => (
+                  <div key={index} className="overflow-hidden rounded-2xl shadow-md cursor-pointer hover:scale-105 transition-transform" onClick={() => window.open(photo, '_blank')}>
+                    <img src={photo} className="w-full h-48 object-cover" alt="" />
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 flex gap-4">
+                <button onClick={handleNowBook} className="flex-1 bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-2xl font-bold">
+                  {t.book}
+                </button>
+                <button onClick={() => setIsDetailModalOpen(false)} className="flex-1 border border-gray-300 hover:bg-gray-50 py-4 rounded-2xl font-medium text-gray-700">
+                  {t.later}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* 預約 Modal & Detail Modal 保持不變（省略以節省空間，與之前一樣） */}
-      {/* ... (預約 Modal 和 Detail Modal 程式碼與上一個版本完全相同) ... */}
+      {/* 預約 Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full mx-4">
+            <h3 className="text-2xl font-bold mb-6 text-center text-gray-900">預約 {selectedDate}</h3>
+            
+            <form onSubmit={handleBooking} className="space-y-5">
+              <select value={selectedMode} onChange={(e) => setSelectedMode(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900" required>
+                <option value="">選擇活動模式</option>
+                {modes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+              </select>
+
+              <input type="text" placeholder={t.hostName} value={hostName} onChange={(e) => setHostName(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900" />
+
+              <input 
+                type="tel" 
+                placeholder={t.phone}
+                value={formatPhoneDisplay(rawPhone)}
+                onChange={(e) => setRawPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                className="w-full border rounded-xl px-4 py-3 text-gray-900"
+                required 
+              />
+
+              <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900" required />
+
+              <div className="relative">
+                <input type="number" value={people} onChange={(e) => setPeople(Number(e.target.value))} min="1" max={modes.find(m => m.id === selectedMode)?.max || 25} className="w-full border rounded-xl px-4 py-3 text-gray-900 pr-16" required />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">{t.people}</span>
+              </div>
+
+              <select value={time} onChange={(e) => setTime(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900">
+                {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+
+              {error && <p className="text-red-500 text-center font-medium">{error}</p>}
+
+              <button type="submit" className="w-full bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-2xl font-bold text-xl">
+                {t.confirm}
+              </button>
+            </form>
+            <button onClick={() => setIsModalOpen(false)} className="mt-4 text-gray-500 w-full">{t.cancel}</button>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-12">
