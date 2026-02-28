@@ -116,7 +116,7 @@ export default function Clawzone() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [detailMode, setDetailMode] = useState<any>(null);
   const [availableTimes, setAvailableTimes] = useState<string[]>(['10:00 - 12:00']);
-  const [currentGallery, setCurrentGallery] = useState<string[]>([]);
+  const [bigPhoto, setBigPhoto] = useState<string | null>(null);   // 新增：大圖 Modal
 
   const modes = [
     { id: 'unlimited', name: t.unlimited, max: 25, min: 1, desc: t.unlimitedDesc, detail: t.unlimitedDetail, icon: Gift, color: 'bg-pink-500', photos: storePhotos },
@@ -171,7 +171,6 @@ export default function Clawzone() {
 
   const openDetailModal = (mode: any) => {
     setDetailMode(mode);
-    setCurrentGallery(mode.photos);
     setIsDetailModalOpen(true);
     setSelectedMode(mode.id);
   };
@@ -281,7 +280,10 @@ export default function Clawzone() {
           <div>
             <h3 className="text-3xl font-bold mb-6 text-pink-600">{t.videos}</h3>
             <div className="aspect-video bg-black rounded-3xl overflow-hidden">
-              <iframe width="100%" height="100%" src="https://www.youtube.com/embed/3JZ_3J0r5f0" allowFullScreen />
+              <video width="100%" height="100%" controls autoPlay loop muted>
+                <source src="https://i.imgur.com/uwVsnKR.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             </div>
           </div>
         </div>
@@ -342,39 +344,45 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* Detail Modal - 根據模式顯示對應照片 */}
+      {/* Detail Modal（點照片看高清大圖） */}
       {isDetailModalOpen && detailMode && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-3xl max-w-5xl w-full mx-4 overflow-hidden">
-            <div className="relative">
-              <button onClick={() => setIsDetailModalOpen(false)} className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="p-8">
-              <h3 className="text-3xl font-bold mb-4 text-gray-900">{detailMode.name}</h3>
-              <p className="text-gray-600 text-lg leading-relaxed mb-8">{detailMode.detail}</p>
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[60]" onClick={() => setIsDetailModalOpen(false)}>
+          <div className="relative max-w-6xl w-full mx-4" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setIsDetailModalOpen(false)} 
+              className="absolute -top-12 right-4 text-white text-5xl hover:text-pink-400 transition-colors"
+            >
+              ×
+            </button>
 
-              {/* 照片畫廊 */}
-              <h4 className="font-semibold text-xl mb-4">照片欣賞</h4>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {detailMode.photos.map((photo: string, index: number) => (
-                  <div key={index} className="overflow-hidden rounded-2xl shadow-md cursor-pointer hover:scale-105 transition-transform" onClick={() => window.open(photo, '_blank')}>
-                    <img src={photo} className="w-full h-48 object-cover" alt="" />
-                  </div>
-                ))}
-              </div>
+            <h3 className="text-white text-3xl font-bold text-center mb-8">{detailMode.name}</h3>
 
-              <div className="mt-8 flex gap-4">
-                <button onClick={handleNowBook} className="flex-1 bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-2xl font-bold">
-                  {t.book}
-                </button>
-                <button onClick={() => setIsDetailModalOpen(false)} className="flex-1 border border-gray-300 hover:bg-gray-50 py-4 rounded-2xl font-medium text-gray-700">
-                  {t.later}
-                </button>
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {detailMode.photos.map((photo: string, index: number) => (
+                <div 
+                  key={index} 
+                  className="cursor-pointer overflow-hidden rounded-3xl shadow-2xl hover:scale-105 transition-transform"
+                  onClick={() => setBigPhoto(photo)}
+                >
+                  <img src={photo} className="w-full aspect-square object-cover" alt="" />
+                </div>
+              ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 高清大圖 Modal（點空白關閉） */}
+      {bigPhoto && (
+        <div 
+          className="fixed inset-0 bg-black/95 flex items-center justify-center z-[70]" 
+          onClick={() => setBigPhoto(null)}
+        >
+          <img 
+            src={bigPhoto} 
+            className="max-h-[90vh] max-w-[95vw] rounded-3xl shadow-2xl" 
+            alt="Big Photo" 
+          />
         </div>
       )}
 
