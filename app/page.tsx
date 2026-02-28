@@ -268,7 +268,7 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* Photos & Videos - Video 已放大並 fit */}
+      {/* Photos & Videos - Video 已縮小 */}
       <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid md:grid-cols-2 gap-12">
           <div>
@@ -279,7 +279,7 @@ export default function Clawzone() {
           </div>
           <div>
             <h3 className="text-3xl font-bold mb-6 text-pink-600">{t.videos}</h3>
-            <div className="overflow-hidden rounded-3xl shadow-2xl h-[520px]">   {/* 已放大 */}
+            <div className="overflow-hidden rounded-3xl shadow-2xl h-[420px]">   {/* 已縮小回 420px */}
               <video 
                 className="w-full h-full object-cover" 
                 controls 
@@ -294,7 +294,7 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* Buy Tokens - 已修正正確價格對應 */}
+      {/* Buy Tokens - 價格已正確 */}
       <div className="max-w-5xl mx-auto px-6 py-12 bg-white">
         <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.buyTokens}</h2>
         <div className="grid md:grid-cols-5 gap-4 text-center">
@@ -321,7 +321,105 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* 模式選擇 + Detail Modal + 大圖 Modal + 預約 Modal 保持不變（已包含你之前要的點照片看高清大圖 + 點空白關閉） */}
+      {/* 模式選擇 */}
+      <div className="max-w-5xl mx-auto px-6 py-12 bg-white">
+        <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.selectMode}</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {modes.map((mode) => {
+            const Icon = mode.icon;
+            return (
+              <div
+                key={mode.id}
+                onClick={() => openDetailModal(mode)}
+                className={`p-8 rounded-3xl border-4 cursor-pointer transition-all hover:shadow-2xl ${selectedMode === mode.id ? 'border-pink-500 bg-pink-50 shadow-xl' : 'border-gray-200 hover:border-pink-300'}`}
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <div className={`w-12 h-12 ${mode.color} rounded-2xl flex items-center justify-center`}>
+                    <Icon className="w-7 h-7 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">{mode.name}</h3>
+                </div>
+                <p className="text-gray-600 mb-6">{mode.desc}</p>
+                <p className="text-pink-600 font-medium">{t.peopleRange}：{mode.min}～{mode.max} 人</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 日曆 */}
+      <div id="booking" className="bg-white py-16">
+        <div className="max-w-4xl mx-auto px-6">
+          <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.selectDate}</h2>
+          <div className="bg-pink-50 p-8 rounded-3xl">
+            <div className="grid grid-cols-7 gap-3 text-center text-pink-600 font-bold mb-4">
+              <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+            <div className="grid grid-cols-7 gap-3">
+              {renderCalendar()}
+            </div>
+          </div>
+          <p className="text-center text-sm text-gray-500 mt-6">{t.green}</p>
+        </div>
+      </div>
+
+      {/* Detail Modal - 點模式彈出照片 */}
+      {isDetailModalOpen && detailMode && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[60]" onClick={() => setIsDetailModalOpen(false)}>
+          <div className="relative max-w-6xl w-full mx-4" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setIsDetailModalOpen(false)} className="absolute -top-12 right-4 text-white text-5xl hover:text-pink-400">×</button>
+            <h3 className="text-white text-3xl font-bold text-center mb-8">{detailMode.name}</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {detailMode.photos.map((photo: string, index: number) => (
+                <div 
+                  key={index} 
+                  className="cursor-pointer overflow-hidden rounded-3xl shadow-2xl hover:scale-105 transition-transform"
+                  onClick={() => setBigPhoto(photo)}
+                >
+                  <img src={photo} className="w-full aspect-square object-cover" alt="" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 高清大圖 Modal（點空白關閉） */}
+      {bigPhoto && (
+        <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[70]" onClick={() => setBigPhoto(null)}>
+          <img src={bigPhoto} className="max-h-[90vh] max-w-[95vw] rounded-3xl shadow-2xl" alt="Big Photo" />
+        </div>
+      )}
+
+      {/* 預約 Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full mx-4">
+            <h3 className="text-2xl font-bold mb-6 text-center text-gray-900">預約 {selectedDate}</h3>
+            <form onSubmit={handleBooking} className="space-y-5">
+              <select value={selectedMode} onChange={(e) => setSelectedMode(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900" required>
+                <option value="">選擇活動模式</option>
+                {modes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+              </select>
+              <input type="text" placeholder={t.hostName} value={hostName} onChange={(e) => setHostName(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900" />
+              <input type="tel" placeholder={t.phone} value={formatPhoneDisplay(rawPhone)} onChange={(e) => setRawPhone(e.target.value.replace(/\D/g, '').slice(0, 10))} className="w-full border rounded-xl px-4 py-3 text-gray-900" required />
+              <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900" required />
+              <div className="relative">
+                <input type="number" value={people} onChange={(e) => setPeople(Number(e.target.value))} min="1" max={modes.find(m => m.id === selectedMode)?.max || 25} className="w-full border rounded-xl px-4 py-3 text-gray-900 pr-16" required />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">{t.people}</span>
+              </div>
+              <select value={time} onChange={(e) => setTime(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900">
+                {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              {error && <p className="text-red-500 text-center font-medium">{error}</p>}
+              <button type="submit" className="w-full bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-2xl font-bold text-xl">
+                {t.confirm}
+              </button>
+            </form>
+            <button onClick={() => setIsModalOpen(false)} className="mt-4 text-gray-500 w-full">{t.cancel}</button>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-12">
