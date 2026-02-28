@@ -11,7 +11,7 @@ const photos = [
   "https://i.imgur.com/nYhHJjG.jpg"
 ];
 
-const logoUrl = "https://i.imgur.com/SC834dZ.jpg";  // 卡通貓 Logo
+const logoUrl = "https://i.imgur.com/SC834dZ.jpg";
 
 const translations = {
   zh: {
@@ -271,28 +271,28 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* Buy Tokens 價格表 */}
+      {/* Buy Tokens 價格表（文字已加深） */}
       <div className="max-w-5xl mx-auto px-6 py-12 bg-white">
         <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.buyTokens}</h2>
         <div className="grid md:grid-cols-5 gap-4 text-center">
           <div className="bg-pink-50 p-6 rounded-3xl">
-            <div className="text-2xl font-bold">5 Tokens</div>
+            <div className="text-2xl font-bold text-gray-900">5 Tokens</div>
             <div className="text-5xl font-bold text-pink-600">$5</div>
           </div>
           <div className="bg-pink-50 p-6 rounded-3xl">
-            <div className="text-2xl font-bold">10 Tokens</div>
+            <div className="text-2xl font-bold text-gray-900">10 Tokens</div>
             <div className="text-5xl font-bold text-pink-600">$10</div>
           </div>
           <div className="bg-pink-50 p-6 rounded-3xl">
-            <div className="text-2xl font-bold">22 Tokens</div>
+            <div className="text-2xl font-bold text-gray-900">22 Tokens</div>
             <div className="text-5xl font-bold text-pink-600">$20</div>
           </div>
           <div className="bg-pink-50 p-6 rounded-3xl">
-            <div className="text-2xl font-bold">60 Tokens</div>
+            <div className="text-2xl font-bold text-gray-900">60 Tokens</div>
             <div className="text-5xl font-bold text-pink-600">$50</div>
           </div>
           <div className="bg-pink-50 p-6 rounded-3xl">
-            <div className="text-2xl font-bold">130 Tokens</div>
+            <div className="text-2xl font-bold text-gray-900">130 Tokens</div>
             <div className="text-5xl font-bold text-pink-600">$100</div>
           </div>
         </div>
@@ -321,15 +321,6 @@ export default function Clawzone() {
               </div>
             );
           })}
-        </div>
-      </div>
-
-      {/* Workshop 背景 */}
-      <div className="max-w-6xl mx-auto px-6 py-16 bg-cover bg-center h-[600px] relative" style={{ backgroundImage: 'url("https://i.imgur.com/474480019_628607779692888_4824997931681205573_n.jpg")' }}>
-        <div className="absolute inset-0 bg-black/40"></div>
-        <div className="relative z-10 text-white text-center pt-40">
-          <h2 className="text-6xl font-bold mb-6">{t.candle}</h2>
-          <p className="text-2xl">2-3人即可開課 • 最多10人</p>
         </div>
       </div>
 
