@@ -3,16 +3,16 @@
 import { useState, useEffect } from 'react';
 import { Users, Gift, Flame, X, Globe } from 'lucide-react';
 
+// === 最新店內照片（已置中、清晰） ===
 const storePhotos = [
-  "https://i.imgur.com/VST9B73.jpg",
-  "https://i.imgur.com/RXSP1Rm.jpg",
-  "https://i.imgur.com/yJXCMg3.jpg",
-  "https://i.imgur.com/nyl0Pcc.jpg",
-  "https://i.imgur.com/nYhHJjG.jpg",
-  "https://i.imgur.com/kjPCK.jpg",
-  "https://i.imgur.com/wTy1x.jpg"
+  "https://i.imgur.com/L99NReM.jpg",
+  "https://i.imgur.com/XaNBQhG.jpg",
+  "https://i.imgur.com/LN0mZ2Z.jpg",
+  "https://i.imgur.com/cGYkTcB.jpg",
+  "https://i.imgur.com/0Lw8x9q.jpg"
 ];
 
+// Workshop 照片（保留你之前的）
 const candlePhotos = [
   "https://i.imgur.com/k5PQd1H.jpg",
   "https://i.imgur.com/iwDJIvw.jpg",
@@ -268,18 +268,22 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* Photos & Videos - Video 已縮小 */}
+      {/* Photos & Videos */}
       <div className="max-w-6xl mx-auto px-6 py-16">
         <div className="grid md:grid-cols-2 gap-12">
           <div>
             <h3 className="text-3xl font-bold mb-6 text-pink-600">{t.photos}</h3>
             <div className="overflow-hidden rounded-3xl shadow-2xl h-[420px]">
-              <img src={storePhotos[currentPhoto]} className="w-full h-full object-cover" alt="Store" />
+              <img 
+                src={storePhotos[currentPhoto]} 
+                className="w-full h-full object-cover object-center" 
+                alt="Store" 
+              />
             </div>
           </div>
           <div>
             <h3 className="text-3xl font-bold mb-6 text-pink-600">{t.videos}</h3>
-            <div className="overflow-hidden rounded-3xl shadow-2xl h-[420px]">   {/* 已縮小回 420px */}
+            <div className="overflow-hidden rounded-3xl shadow-2xl h-[420px]">
               <video 
                 className="w-full h-full object-cover" 
                 controls 
@@ -294,7 +298,7 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* Buy Tokens - 價格已正確 */}
+      {/* Buy Tokens */}
       <div className="max-w-5xl mx-auto px-6 py-12 bg-white">
         <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.buyTokens}</h2>
         <div className="grid md:grid-cols-5 gap-4 text-center">
@@ -363,7 +367,7 @@ export default function Clawzone() {
         </div>
       </div>
 
-      {/* Detail Modal - 點模式彈出照片 */}
+      {/* Detail Modal */}
       {isDetailModalOpen && detailMode && (
         <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[60]" onClick={() => setIsDetailModalOpen(false)}>
           <div className="relative max-w-6xl w-full mx-4" onClick={e => e.stopPropagation()}>
@@ -376,7 +380,7 @@ export default function Clawzone() {
                   className="cursor-pointer overflow-hidden rounded-3xl shadow-2xl hover:scale-105 transition-transform"
                   onClick={() => setBigPhoto(photo)}
                 >
-                  <img src={photo} className="w-full aspect-square object-cover" alt="" />
+                  <img src={photo} className="w-full aspect-square object-cover object-center" alt="" />
                 </div>
               ))}
             </div>
@@ -384,10 +388,10 @@ export default function Clawzone() {
         </div>
       )}
 
-      {/* 高清大圖 Modal（點空白關閉） */}
+      {/* 高清大圖 Modal */}
       {bigPhoto && (
         <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-[70]" onClick={() => setBigPhoto(null)}>
-          <img src={bigPhoto} className="max-h-[90vh] max-w-[95vw] rounded-3xl shadow-2xl" alt="Big Photo" />
+          <img src={bigPhoto} className="max-h-[90vh] max-w-[95vw] rounded-3xl shadow-2xl object-contain" alt="Big Photo" />
         </div>
       )}
 
