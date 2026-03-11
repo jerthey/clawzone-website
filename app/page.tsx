@@ -59,7 +59,18 @@ const translations = {
     videos: "Videos",
     successAlert: "🎉 預約成功！\n日期：{date} {time}\n模式：{mode}\n人數：{people} 人\n我們將寄 $200 CAD 定金發票到 {email}",
     buyTokens: "Buy Tokens",
-    tokensTitle: "普通買幣價格"
+    tokensTitle: "普通買幣價格",
+    trustTitle: "為什麼家長放心選擇我們",
+    reviewLabel: "Google Reviews",
+    basedOn: "依據",
+    parentVoices: "家長評價",
+    policyTitle: "退款 / 改期政策",
+    policy1: "活動前 72 小時以上：可免費改期一次",
+    policy2: "活動前 24-72 小時：可改期，酌收手續費",
+    policy3: "活動前 24 小時內：定金不退，可轉一次檔期",
+    callNow: "立即來電",
+    instagramNow: "Instagram",
+    tiktokNow: "TikTok"
   },
   en: {
     title: "CLAWZONE",
@@ -92,7 +103,18 @@ const translations = {
     videos: "Videos",
     successAlert: "🎉 Booking Successful!\nDate: {date} {time}\nMode: {mode}\nPeople: {people}\nWe will send $200 CAD deposit invoice to {email}",
     buyTokens: "Buy Tokens",
-    tokensTitle: "Regular Token Prices"
+    tokensTitle: "Regular Token Prices",
+    trustTitle: "Why Parents Trust Us",
+    reviewLabel: "Google Reviews",
+    basedOn: "Based on",
+    parentVoices: "What Parents Say",
+    policyTitle: "Refund / Reschedule Policy",
+    policy1: "72+ hours before event: one free reschedule",
+    policy2: "24-72 hours before event: reschedule with admin fee",
+    policy3: "Within 24 hours: deposit non-refundable, one date transfer",
+    callNow: "Call Now",
+    instagramNow: "Instagram",
+    tiktokNow: "TikTok"
   }
 };
 
@@ -126,6 +148,24 @@ export default function Clawzone() {
 
   const bcHolidays2026 = ['2026-01-01','2026-02-16','2026-04-03','2026-05-18','2026-07-01','2026-08-03','2026-09-07','2026-09-30','2026-10-12','2026-11-11','2026-12-25'];
 
+  const googleRating = 4.8;
+  const googleReviewCount = 186;
+  const contactPhone = '+1-604-812-2529';
+  const instagramLink = 'https://instagram.com/clawzonearcade';
+  const tiktokLink = 'https://www.tiktok.com/@clawzonearcade';
+
+  const testimonials = [
+    language === 'zh'
+      ? '「孩子們玩到不想回家，店員超有耐心！」— Burnaby 家長'
+      : '“Kids had a blast and staff were super patient!” — Burnaby Parent',
+    language === 'zh'
+      ? '「包場流程很順，生日會完全不用操心。」— Vancouver 家長'
+      : '“Private party booking was smooth and stress-free.” — Vancouver Parent',
+    language === 'zh'
+      ? '「環境乾淨、拍照好看，會再回訪。」— Coquitlam 家長'
+      : '“Clean, photo-friendly, and we’ll come back again.” — Coquitlam Parent'
+  ];
+
   useEffect(() => {
     const heroTimer = setInterval(() => setHeroIndex(i => (i + 1) % 3), 3000);
     const photoTimer = setInterval(() => setCurrentPhoto(p => (p + 1) % storePhotos.length), 3500);
@@ -138,6 +178,13 @@ export default function Clawzone() {
     if (numbers.length <= 3) return `(${numbers}`;
     if (numbers.length <= 6) return `(${numbers.slice(0,3)}) ${numbers.slice(3)}`;
     return `(${numbers.slice(0,3)}) ${numbers.slice(3,6)}-${numbers.slice(6)}`;
+  };
+
+  const formatDateLocal = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   };
 
   const getAvailableTimes = (dateStr: string): string[] => {
@@ -214,26 +261,38 @@ export default function Clawzone() {
 
   const renderCalendar = () => {
     const today = new Date();
-    const days = [];
-    for (let i = 1; i <= 31; i++) {
-      const date = new Date(today.getFullYear(), today.getMonth(), i);
-      const dateStr = date.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const firstWeekday = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const calendarCells = [];
+
+    for (let i = 0; i < firstWeekday; i++) {
+      calendarCells.push(<div key={`empty-${i}`} className="p-4" />);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const dateStr = formatDateLocal(date);
       const weekday = date.getDay();
       const isHoliday = bcHolidays2026.includes(dateStr);
       const isMondayClosed = weekday === 1 && !isHoliday;
+      const isPastDate = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const isDisabled = isMondayClosed || isPastDate;
 
-      days.push(
+      calendarCells.push(
         <div
-          key={i}
-          onClick={() => !isMondayClosed && openBookingModal(dateStr)}
+          key={day}
+          onClick={() => !isDisabled && openBookingModal(dateStr)}
           className={`p-4 rounded-2xl text-xl font-semibold text-center transition-all
-            ${isMondayClosed ? 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none' : 'bg-emerald-400 hover:bg-emerald-500 text-white cursor-pointer'}`}
+            ${isDisabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none' : 'bg-emerald-400 hover:bg-emerald-500 text-white cursor-pointer'}`}
         >
-          {i}
+          {day}
         </div>
       );
     }
-    return days;
+
+    return calendarCells;
   };
 
   return (
@@ -425,11 +484,58 @@ export default function Clawzone() {
         </div>
       )}
 
+      {/* Trust Elements */}
+      <div className="max-w-6xl mx-auto px-6 py-14">
+        <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.trustTitle}</h2>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-3xl p-6 shadow-lg border border-pink-100">
+            <p className="text-gray-500 mb-2">{t.reviewLabel}</p>
+            <p className="text-4xl font-bold text-pink-600">⭐ {googleRating}</p>
+            <p className="text-gray-600">{t.basedOn} {googleReviewCount}+ reviews</p>
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 shadow-lg border border-pink-100">
+            <p className="text-gray-500 mb-3">{t.parentVoices}</p>
+            <div className="space-y-3 text-gray-700 text-sm">
+              {testimonials.map((line, idx) => (
+                <p key={idx}>{line}</p>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 shadow-lg border border-pink-100">
+            <p className="text-gray-500 mb-3">{t.policyTitle}</p>
+            <ul className="space-y-2 text-sm text-gray-700 list-disc list-inside">
+              <li>{t.policy1}</li>
+              <li>{t.policy2}</li>
+              <li>{t.policy3}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating CTA */}
+      <div className="fixed bottom-6 right-6 z-[80] flex flex-col gap-3">
+        <a href="#booking" className="bg-pink-500 hover:bg-pink-600 text-white px-5 py-3 rounded-full shadow-xl font-semibold text-center">
+          {t.bookNow}
+        </a>
+        <a href={`tel:${contactPhone}`} className="bg-purple-500 hover:bg-purple-600 text-white px-5 py-3 rounded-full shadow-xl font-semibold text-center">
+          {t.callNow}
+        </a>
+        <a href={instagramLink} target="_blank" rel="noreferrer" className="bg-gradient-to-r from-fuchsia-500 to-orange-500 hover:opacity-90 text-white px-5 py-3 rounded-full shadow-xl font-semibold text-center">
+          {t.instagramNow}
+        </a>
+        <a href={tiktokLink} target="_blank" rel="noreferrer" className="bg-black hover:bg-gray-800 text-white px-5 py-3 rounded-full shadow-xl font-semibold text-center">
+          {t.tiktokNow}
+        </a>
+      </div>
+
       {/* Footer */}
       <footer className="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-12">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <p className="text-2xl font-bold mb-2">Clawzone Claw Machine Paradise</p>
-          <p className="text-lg">4680 Hastings St, Burnaby, BC • info@clawzonearcade.com</p>
+          <p className="text-lg">4680 Hastings St, Burnaby, BC • +1 (604) 812-2529 • info@clawzonearcade.com</p>
         </div>
       </footer>
     </div>
