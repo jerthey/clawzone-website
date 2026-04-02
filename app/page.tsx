@@ -204,6 +204,67 @@ function FAQItem({
   isOpen,
   onToggle,
   language,
+}function FAQItem({
+  item,
+  isOpen,
+  onToggle,
+  language,
+}: {
+  item: (typeof faqData)[0];
+  isOpen: boolean;
+  onToggle: () => void;
+  language: 'zh' | 'en';
+}) {
+  return (
+    <div
+      className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+        isOpen
+          ? 'border-pink-300 bg-pink-50/60 shadow-md'
+          : 'border-gray-200 bg-white hover:border-pink-200 hover:shadow-sm'
+      }`}
+    >
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left"
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-2xl select-none">{item.icon}</span>
+          <span className="font-bold text-gray-900 text-base leading-snug">
+            {language === 'zh' ? item.q_zh : item.q_en}
+          </span>
+        </div>
+        <span
+          className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 ${
+            isOpen ? 'bg-pink-500 text-white rotate-45' : 'bg-gray-100 text-gray-500'
+          }`}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </span>
+      </button>
+      <div
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isOpen ? 'max-h-[700px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="px-6 pb-5 pl-[4.25rem]">
+          <p className="text-gray-600 text-sm leading-7 whitespace-pre-line">
+            {language === 'zh' ? item.a_zh : item.a_en}
+          </p>
+          {item.hasImage && item.imageSrc !== 'PARKING_IMAGE_URL_HERE' && (
+            <img
+              src={item.imageSrc}
+              alt={language === 'zh' ? item.imageAlt_zh : item.imageAlt_en}
+              className="mt-4 w-full rounded-2xl object-cover shadow-md"
+              loading="lazy"
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function FAQSection({ language }: { language: 'zh' | 'en' }) {
