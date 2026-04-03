@@ -199,13 +199,8 @@ const faqData = [
   },
 ];
 
-function FAQItem({
-  item,
-  isOpen,
-  onToggle,
-  language,
-}function FAQItem({
-  item,
+  function FAQItem({
+    item,
   isOpen,
   onToggle,
   language,
