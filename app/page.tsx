@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { Users, Gift, Flame, X, Globe, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
