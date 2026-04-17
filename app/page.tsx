@@ -158,7 +158,7 @@ const faqData = [
 
 function FAQItem({ item, isOpen, onToggle, language }: {
   item: (typeof faqData)[0]; isOpen: boolean; onToggle: () => void; language: 'zh' | 'en';
-}) {
+}): JSX.Element {
   return (
     <div className={`rounded-2xl border transition-all duration-200 overflow-hidden ${isOpen ? 'border-pink-300 bg-pink-50/60 shadow-md' : 'border-gray-200 bg-white hover:border-pink-200 hover:shadow-sm'}`}>
       <button onClick={onToggle} className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left" aria-expanded={isOpen}>
