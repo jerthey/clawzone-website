@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Users, Gift, Flame, X, Globe, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQYvaOLYm1Qxvw4Mt7wp4svUd7mds7nkOw1qFBOZGCLwgf9onKI7M_EIi6fx3jzZY/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXtfYELyQUd2AbcXWPHYmZUu0jEWKPpSVn2sv60qPACYH-FfW_L9CwyiqL7qNxHXK1/exec';
 
 // === 最新店內照片（已置中、清晰） ===
 const storePhotos = [
