@@ -198,7 +198,7 @@ function FAQSection({ language }: { language: 'zh' | 'en' }) {
           <a href="tel:+16048122529" className="kawaii-btn inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-full font-semibold text-sm shadow-lg hover:opacity-90 transition-all">
             📞 {language === 'zh' ? '立即來電' : 'Call Us'}
           </a>
-          <a href="https://instagram.com/clawzonearcade" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-gradient-to-r from-fuchsia-500 to-orange-500 text-white px-6 py-3 rounded-full font-semibold text-sm shadow-lg hover:opacity-90 transition-all">
+          <a href="https://instagram.com/clawzone.arcade" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-gradient-to-r from-fuchsia-500 to-orange-500 text-white px-6 py-3 rounded-full font-semibold text-sm shadow-lg hover:opacity-90 transition-all">
             📸 Instagram DM
           </a>
         </div>
@@ -298,8 +298,8 @@ export default function Clawzone() {
 
   const googleRating = 4.8;
   const googleReviewCount = 186;
-  const instagramLink = 'https://instagram.com/clawzonearcade';
-  const tiktokLink = 'https://www.tiktok.com/@clawzonearcade';
+  const instagramLink = 'https://instagram.com/clawzone.arcade';
+  const tiktokLink = 'https://www.tiktok.com/@clawzone.arcade';
 
   const testimonials = [
     language === 'zh'
@@ -1333,7 +1333,7 @@ export default function Clawzone() {
               <button onClick={() => setShowBeta(false)} className="w-full py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold hover:opacity-90 transition-all">
                 {language === 'zh' ? '我知道了，繼續瀏覽' : 'Got it, continue browsing'}
               </button>
-              <a href="https://instagram.com/clawzonearcade" target="_blank" rel="noreferrer" className="w-full py-3 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-orange-500 text-white font-bold hover:opacity-90 transition-all">
+              <a href="https://instagram.com/clawzone.arcade" target="_blank" rel="noreferrer" className="w-full py-3 rounded-2xl bg-gradient-to-r from-fuchsia-500 to-orange-500 text-white font-bold hover:opacity-90 transition-all">
                 📸 Instagram
               </a>
               <a href="tel:+16048122529" className="w-full py-3 rounded-2xl border-2 border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all">
