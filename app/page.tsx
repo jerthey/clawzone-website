@@ -361,6 +361,9 @@ export default function Clawzone() {
 
   useEffect(() => {
     setNow(new Date());
+    // Reset displayed month to current month on client mount (fix SSR date caching)
+    const today = new Date();
+    setDisplayedMonth(new Date(today.getFullYear(), today.getMonth(), 1));
     const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
@@ -402,11 +405,25 @@ export default function Clawzone() {
     const weekday = date.getDay();
     const isHoliday = bcHolidays2026.includes(dateStr);
 
-    if (isHoliday) return ['10:00 - 12:00'];
-    if (weekday === 1) return [];
-    if (weekday === 6) return ['10:00 - 12:00'];
-    if (weekday === 0) return ['10:00 - 12:00', '13:00 - 15:00', '18:00 - 20:00'];
-    return ['10:00 - 12:00', '13:00 - 15:00'];
+    let times: string[];
+    if (isHoliday) times = ['10:00 - 12:00'];
+    else if (weekday === 1) times = [];
+    else if (weekday === 6) times = ['10:00 - 12:00'];
+    else if (weekday === 0) times = ['10:00 - 12:00', '13:00 - 15:00', '18:00 - 20:00'];
+    else times = ['10:00 - 12:00', '13:00 - 15:00'];
+
+    // Filter out past time slots if it's today
+    const today = now ?? new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    if (dateStr === todayStr) {
+      const currentMinutes = today.getHours() * 60 + today.getMinutes();
+      times = times.filter(t => {
+        const [startHour, startMin] = t.split(' - ')[0].split(':').map(Number);
+        return currentMinutes < startHour * 60 + startMin;
+      });
+    }
+
+    return times;
   };
 
   const openBookingModal = (dateStr: string) => {
@@ -539,7 +556,9 @@ export default function Clawzone() {
       const isHoliday = bcHolidays2026.includes(dateStr);
       const isMondayClosed = weekday === 1 && !isHoliday;
       const isPastDate = date < todayStart;
-      const isDisabled = isMondayClosed || isPastDate;
+      // If it's today, check if all time slots have passed
+      const isTodayWithNoSlots = dateStr === formatDateLocal(todayStart) && getAvailableTimes(dateStr).length === 0;
+      const isDisabled = isMondayClosed || isPastDate || isTodayWithNoSlots;
 
       calendarCells.push(
         <div
