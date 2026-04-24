@@ -29,6 +29,25 @@ const candlePhotos = [
 
 const brandBannerUrl = 'https://i.imgur.com/OLkYf0k.png';
 
+// === Current Events（活動橫幅設定 / 依日期自動顯示 or 標記已結束） ===
+// 新增活動：直接複製下面一筆，改 id / start / end / 中英文字就好
+// 規則：
+//   活動日期中 → 顯示「活動進行中」
+//   活動結束 30 天內 → 自動顯示「已結束，看 IG / TikTok 贏家」
+//   超過 30 天 → 自動隱藏
+const currentEvents = [
+  {
+    id: 'pokemon-mar-2026',
+    start: '2026-03-05',
+    end: '2026-03-29',
+    emoji: '🎴',
+    title_zh: 'Pokemon Card Event',
+    title_en: 'Pokemon Card Event',
+    desc_zh: '玩爪機抽限量寶可夢卡 • 店內抽獎',
+    desc_en: 'Play to win limited Pokémon cards • In-store draw',
+  },
+];
+
 const translations = {
   zh: {
     title: "CLAWZONE",
@@ -210,6 +229,7 @@ function FAQSection({ language }: { language: 'zh' | 'en' }) {
 export default function Clawzone() {
   const [language, setLanguage] = useState<'zh' | 'en'>('en');
   const [showBeta, setShowBeta] = useState(true);
+  const [isEventBannerClosed, setIsEventBannerClosed] = useState(false);
   const t = translations[language];
 
   const [heroIndex, setHeroIndex] = useState(0);
@@ -300,6 +320,27 @@ export default function Clawzone() {
   const googleReviewCount = 186;
   const instagramLink = 'https://instagram.com/clawzone.arcade';
   const tiktokLink = 'https://www.tiktok.com/@clawzone.arcade';
+
+  // === 判斷目前要顯示哪個活動：進行中 優先 > 結束 30 天內 > 否則不顯示 ===
+  const activeEvent = (() => {
+    if (!now) return null;
+    const nowTs = now.getTime();
+    for (const e of currentEvents) {
+      const startTs = new Date(e.start + 'T00:00:00').getTime();
+      const endTs = new Date(e.end + 'T23:59:59').getTime();
+      if (nowTs >= startTs && nowTs <= endTs) {
+        return { ...e, status: 'active' as const };
+      }
+    }
+    for (const e of currentEvents) {
+      const endTs = new Date(e.end + 'T23:59:59').getTime();
+      const daysSince = (nowTs - endTs) / (1000 * 60 * 60 * 24);
+      if (daysSince > 0 && daysSince <= 30) {
+        return { ...e, status: 'expired' as const };
+      }
+    }
+    return null;
+  })();
 
   const testimonials = [
     language === 'zh'
@@ -711,6 +752,69 @@ export default function Clawzone() {
           </div>
         </div>
       </nav>
+
+      {/* Current Event Banner（條狀公告，可關閉，依日期自動切換狀態） */}
+      {activeEvent && !isEventBannerClosed && (
+        <div
+          className={`relative text-white ${
+            activeEvent.status === 'active'
+              ? 'bg-gradient-to-r from-[#ff5fa2] via-[#7c4dff] to-[#4f72d9]'
+              : 'bg-gradient-to-r from-gray-700 via-gray-800 to-gray-900'
+          }`}
+        >
+          <div className="max-w-6xl mx-auto px-4 py-2.5 md:py-3 pr-12 md:pr-14 flex items-center justify-center gap-2 md:gap-3 text-center text-sm md:text-base leading-snug">
+            <span className="text-xl md:text-2xl flex-shrink-0">{activeEvent.emoji}</span>
+            {activeEvent.status === 'active' ? (
+              <div className="font-semibold">
+                <span className="inline-block bg-white/25 px-2 py-0.5 rounded-full text-[10px] md:text-xs font-bold mr-2 align-middle">
+                  {language === 'zh' ? '活動進行中' : 'NOW ON'}
+                </span>
+                <span>{language === 'zh' ? activeEvent.title_zh : activeEvent.title_en}</span>
+                <span className="mx-2 opacity-60 hidden sm:inline">•</span>
+                <span className="font-normal opacity-95 block sm:inline mt-1 sm:mt-0">
+                  {language === 'zh' ? activeEvent.desc_zh : activeEvent.desc_en}
+                </span>
+              </div>
+            ) : (
+              <div className="font-semibold">
+                <span className="inline-block bg-white/25 px-2 py-0.5 rounded-full text-[10px] md:text-xs font-bold mr-2 align-middle">
+                  {language === 'zh' ? '活動已結束' : 'ENDED'}
+                </span>
+                <span>{language === 'zh' ? activeEvent.title_zh : activeEvent.title_en}</span>
+                <span className="mx-2 opacity-60 hidden sm:inline">•</span>
+                <span className="font-normal opacity-95 block sm:inline mt-1 sm:mt-0">
+                  {language === 'zh' ? '前往 ' : 'Check '}
+                  <a
+                    href={instagramLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline font-bold hover:text-pink-200"
+                  >
+                    Instagram
+                  </a>
+                  <span className="mx-1 opacity-60">/</span>
+                  <a
+                    href={tiktokLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline font-bold hover:text-pink-200"
+                  >
+                    TikTok
+                  </a>
+                  {language === 'zh' ? ' 看贏家 🏆' : ' to see the winners 🏆'}
+                </span>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => setIsEventBannerClosed(true)}
+            className="absolute top-1/2 right-3 -translate-y-1/2 w-7 h-7 md:w-8 md:h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition-all"
+            aria-label={language === 'zh' ? '關閉公告' : 'Close banner'}
+          >
+            <X className="w-4 h-4 md:w-5 md:h-5" />
+          </button>
+        </div>
+      )}
 
       {/* Hero */}
       <div className="bg-[radial-gradient(circle_at_10%_20%,#ff9ccd_0%,#ff5fa2_32%,#7c4dff_68%,#4f72d9_100%)] text-white py-28">
