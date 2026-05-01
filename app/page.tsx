@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Users, Gift, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQYvaOLYm1Qxvw4Mt7wp4svUd7mds7nkOw1qFBOZGCLwgf9onKI7M_EIi6fx3jzZY/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxXtfYELyQUd2AbcXWPHYmZUu0jEWKPpSVn2sv60qPACYH-FfW_L9CwyiqL7qNxHXK1/exec';
 
 // === Latest in-store photos (centered, sharp) ===
 const storePhotos = [
