@@ -89,7 +89,7 @@ const faqData = [
     a_en: 'All ages are welcome!' },
   { id: 2, icon: '🪙',
     q_en: 'Can I get a refund on unused tokens?',
-    a_en: 'Tokens are non-refundable once purchased. Leftover tokens can be saved onto your card for your next visit.' },
+    a_en: 'Tokens are non-refundable once purchased. Leftover tokens can be saved onto your membership card for your next visit.' },
   { id: 3, icon: '🔄',
     q_en: 'How does the Trade-in for Points system work?',
     a_en: 'Win a prize and trade it in before you leave the store to redeem something else from our prize wall.\n\n⚠️ Trade-in must be completed on the same day before leaving.\n\nNote: Some machines (such as capsule, blind box, lucky, blocks, and select special machines) are not eligible for trade-in. These will be marked “Not Tradeable” on the machine.' },
@@ -101,7 +101,7 @@ const faqData = [
     a_en: "Yes! We're happy to welcome dogs into our store, provided they're well-behaved (no aggressive or violent tendencies) and remain under your close supervision at all times. This helps ensure a safe and enjoyable experience for everyone. We look forward to seeing you and your pup soon! 🐾" },
   { id: 7, icon: '🎉',
     q_en: 'How far in advance should I book a Party?',
-    a_en: "Book as early as possible — slots fill up a month in advance. Secure your spot with a $200 CAD deposit." },
+    a_en: "Book as early as possible — slots fill up a month in advance. Secure your spot with a party deposit." },
   { id: 8, icon: '🅿️',
     q_en: 'Is there parking available?',
     a_en: 'Yes! Parking is available near 4680 Hastings St, Burnaby.' },
@@ -279,7 +279,7 @@ export default function Clawzone() {
 
   const notEligibleRules = [
         'Capsule machines, Blind Box, Lucky machines, Blocks, etc.',
-        'Tissues, wet wipes, nails, Pokémon cards, and similar items',
+        'Tissues, wet wipes, Pressed-On Nails, Pokémon cards, and similar items',
         'Any machine marked "Not Tradeable" on the front'
       ];
 
@@ -361,7 +361,7 @@ export default function Clawzone() {
     } else {
       // Unlimited Token Play Party (per PDF page 2)
       if (weekday === 6) times = ['10:00 - 12:00'];
-      else if (weekday === 0 || isHoliday) times = ['10:00 - 12:00', '18:00 - 20:00'];
+      else if (weekday === 0 || isHoliday) times = ['10:00 - 12:00', '18:15 - 20:15'];
       else times = ['10:00 - 12:00', '13:00 - 15:00']; // Tue-Fri
     }
 
