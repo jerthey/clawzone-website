@@ -53,7 +53,7 @@ const translations = {
     unlimitedDetail: "Entire arcade access for your party. Unlimited token play for 1 hour and 15 minutes, plus prizes for every player.",
     privateDetail: "Private room for up to 10 people. Includes free tokens, table & chairs, and Nintendo Switch 2 console.",
     selectDate: "Select Party Date",
-    green: "Green = Available • Gray = Unavailable",
+    green: "Green = Available • Red = Fully Booked • Gray = Unavailable",
     book: "Book Now",
     later: "Choose Later",
     people: "People",
@@ -194,6 +194,7 @@ export default function Clawzone() {
   const [availableTimes, setAvailableTimes] = useState<string[]>(['10:00 - 12:00']);
   const [bigPhoto, setBigPhoto] = useState<string | null>(null);
   const [now, setNow] = useState<Date | null>(null);
+  const [bookedSlots, setBookedSlots] = useState<{date: string; time: string; mode: string}[]>([]);
   const [showWeekHoursMobile, setShowWeekHoursMobile] = useState(false);
   const [displayedMonth, setDisplayedMonth] = useState(() => {
     const d = new Date();
@@ -309,6 +310,14 @@ export default function Clawzone() {
     return () => clearInterval(timer);
   }, []);
 
+  // Fetch confirmed bookings so calendar can mark fully-booked dates red
+  useEffect(() => {
+    fetch(APPS_SCRIPT_URL + '?action=getBooked')
+      .then(r => r.json())
+      .then(d => { if (d && d.success && Array.isArray(d.bookedSlots)) setBookedSlots(d.bookedSlots); })
+      .catch(err => console.warn('Could not load booked slots:', err));
+  }, []);
+
   useEffect(() => {
     if (!selectedMode) return;
     const mode = modes.find((m) => m.id === selectedMode);
@@ -375,6 +384,9 @@ export default function Clawzone() {
         return currentMinutes < startHour * 60 + startMin;
       });
     }
+
+    // Filter out slots already confirmed in the Google Sheet
+    times = times.filter(t => !bookedSlots.some(b => b.date === dateStr && b.time === t));
 
     return times;
   };
@@ -488,6 +500,20 @@ export default function Clawzone() {
     }
   };
 
+  // Check if a specific time slot for a given date is already booked (Confirmed)
+  const isSlotBooked = (dateStr: string, time: string): boolean => {
+    return bookedSlots.some(b => b.date === dateStr && b.time === time);
+  };
+
+  // A date is "fully booked" (red) if every slot across BOTH modes is in bookedSlots
+  const isDateFullyBooked = (dateStr: string): boolean => {
+    const unlimited = getAvailableTimes(dateStr, 'unlimited');
+    const private_ = getAvailableTimes(dateStr, 'private');
+    const allSlots = [...new Set([...unlimited, ...private_])];
+    if (allSlots.length === 0) return false;
+    return allSlots.every(slot => isSlotBooked(dateStr, slot));
+  };
+
   const renderCalendar = () => {
     const baseline = now ?? new Date();
     const year = displayedMonth.getFullYear();
@@ -511,14 +537,23 @@ export default function Clawzone() {
       const isPastDate = date < todayStart;
       // If it's today, check if all time slots have passed
       const isTodayWithNoSlots = dateStr === formatDateLocal(todayStart) && getAvailableTimes(dateStr).length === 0;
-      const isDisabled = isMondayClosed || isPastDate || isTodayWithNoSlots;
+      const fullyBooked = isDateFullyBooked(dateStr);
+      const isDisabled = isMondayClosed || isPastDate || isTodayWithNoSlots || fullyBooked;
+
+      let cellClass: string;
+      if (isMondayClosed || isPastDate || isTodayWithNoSlots) {
+        cellClass = 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none';
+      } else if (fullyBooked) {
+        cellClass = 'bg-red-400 text-white cursor-not-allowed pointer-events-none';
+      } else {
+        cellClass = 'bg-emerald-400 hover:bg-emerald-500 text-white cursor-pointer';
+      }
 
       calendarCells.push(
         <div
           key={day}
           onClick={() => !isDisabled && openBookingModal(dateStr)}
-          className={`p-4 rounded-2xl text-xl font-semibold text-center transition-all
-            ${isDisabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none' : 'bg-emerald-400 hover:bg-emerald-500 text-white cursor-pointer'}`}
+          className={`p-4 rounded-2xl text-xl font-semibold text-center transition-all ${cellClass}`}
         >
           {day}
         </div>
