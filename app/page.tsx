@@ -333,7 +333,9 @@ export default function Clawzone() {
     if (!selectedDate || !selectedMode) return;
     const newTimes = getAvailableTimes(selectedDate, selectedMode);
     setAvailableTimes(newTimes);
-    if (newTimes.length > 0 && !newTimes.includes(time)) {
+    if (newTimes.length === 0) {
+      setTime('');
+    } else if (!newTimes.includes(time)) {
       setTime(newTimes[0]);
     }
   }, [selectedMode, selectedDate]);
@@ -468,6 +470,16 @@ export default function Clawzone() {
     e.preventDefault();
     if (!checkPeople() || !selectedMode) {
       setError('Please select an activity mode');
+      return;
+    }
+    // Validate time is a real available slot for this date+mode
+    const validTimes = getAvailableTimes(selectedDate, selectedMode);
+    if (validTimes.length === 0) {
+      setError('No available time slots for the selected mode on this date. Please choose a different date or mode.');
+      return;
+    }
+    if (!time || !validTimes.includes(time)) {
+      setError('Please select a valid time slot.');
       return;
     }
     if (!agreedTerms) {
@@ -1562,13 +1574,29 @@ export default function Clawzone() {
               </label>
 
               {error && <p className="text-red-500 text-center font-medium">{error}</p>}
-              <button
-                type="submit"
-                disabled={!agreedTerms}
-                className={`w-full py-4 rounded-2xl font-bold text-xl text-white ${agreedTerms ? 'bg-pink-500 hover:bg-pink-600' : 'bg-gray-300 cursor-not-allowed'}`}
-              >
-                {t.confirm}
-              </button>
+              {(() => {
+                const validTimes = selectedDate && selectedMode ? getAvailableTimes(selectedDate, selectedMode) : [];
+                const hasValidTime = !!time && validTimes.includes(time);
+                const canSubmit = agreedTerms && hasValidTime;
+                return (
+                  <>
+                    {!hasValidTime && selectedMode && (
+                      <p className="text-orange-600 text-center text-sm font-semibold">
+                        {validTimes.length === 0
+                          ? '⚠ No time slots available — try another mode or date'
+                          : '⚠ Please pick an available time slot above'}
+                      </p>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={!canSubmit}
+                      className={`w-full py-4 rounded-2xl font-bold text-xl text-white ${canSubmit ? 'bg-pink-500 hover:bg-pink-600' : 'bg-gray-300 cursor-not-allowed'}`}
+                    >
+                      {t.confirm}
+                    </button>
+                  </>
+                );
+              })()}
             </form>
             <button onClick={() => { setIsModalOpen(false); setSubmitStatus('idle'); }} className="mt-4 text-gray-500 w-full">{t.cancel}</button>
               </>
