@@ -53,12 +53,12 @@ const translations = {
     unlimitedDetail: "Entire arcade access for your party. Unlimited token play for 1 hour and 15 minutes, plus prizes for every player.",
     privateDetail: "Private room for up to 10 people. Includes free tokens, table & chairs, and Nintendo Switch 2 console.",
     selectDate: "Select Party Date",
-    green: "Green = Available • Red = Fully Booked • Gray = Unavailable. Dates with \"Unlimited Full\" or \"Private Full\" label still have other mode available.",
+    green: "Green = Available • Red = Fully Booked • Gray = Unavailable. Dates with \"Unlimited Play-Full\" or \"Private Room-Full\" label still have the other mode available.",
     book: "Book Now",
     later: "Choose Later",
     people: "People",
     peopleRange: "Group Size",
-    confirm: "Confirm Booking & Pay $200 Deposit",
+    confirm: "Confirm Booking & Pay Deposit",
     cancel: "Cancel",
     hostName: "Host Name",
     phone: "Phone Number",
@@ -162,7 +162,7 @@ function FAQSection() {
 }
 
 export default function Clawzone() {
-  const [showBeta, setShowBeta] = useState(true);
+  const [showBeta, setShowBeta] = useState(false);
   const [isEventBannerClosed, setIsEventBannerClosed] = useState(false);
   const t = translations.en;
 
@@ -288,7 +288,7 @@ export default function Clawzone() {
 
 
   const partyTermsTitle = 'Private Party Terms (Please read before booking)';
-  const viewTermsText = 'View Party Terms & Details';
+  const viewTermsText = 'View Terms & Details for this Mode';
 
   useEffect(() => {
     const heroTimer = setInterval(() => setHeroIndex(i => (i + 1) % 2), 3000);
@@ -568,8 +568,8 @@ export default function Clawzone() {
 
       // Mode-specific label when only ONE mode is fully booked
       let bookedLabel: string | null = null;
-      if (!fullyBooked && unlimitedBooked) bookedLabel = 'Unlimited Full';
-      else if (!fullyBooked && privateBooked) bookedLabel = 'Private Full';
+      if (!fullyBooked && unlimitedBooked) bookedLabel = 'Unlimited Play-Full';
+      else if (!fullyBooked && privateBooked) bookedLabel = 'Private Room-Full';
 
       calendarCells.push(
         <div
@@ -893,7 +893,7 @@ export default function Clawzone() {
                 <div className="rounded-3xl p-6 bg-gradient-to-br from-pink-50 to-white border border-pink-100 shadow-sm">
                   <p className="text-xs font-bold text-pink-500 mb-2">STEP 1</p>
                   <h3 className="text-xl font-bold mb-2 text-gray-900">{'Buy Tokens or Recharge Card'}</h3>
-                  <p className="text-gray-600 text-sm leading-6">{'Grab tokens at the counter or recharge your member card and jump right in.'}</p>
+                  <p className="text-gray-600 text-sm leading-6">{'Grab tokens at the counter or recharge your membership card and jump right in.'}</p>
                 </div>
                 <div className="rounded-3xl p-6 bg-gradient-to-br from-violet-50 to-white border border-violet-100 shadow-sm">
                   <p className="text-xs font-bold text-violet-500 mb-2">STEP 2</p>
@@ -933,7 +933,15 @@ export default function Clawzone() {
       {/* Mode Selection */}
       <div className="max-w-5xl mx-auto px-6 py-12 mt-8 bg-gradient-to-br from-white to-violet-50/60 rounded-3xl shadow-sm">
         <h2 className="text-4xl font-bold text-center mb-10 text-pink-600">{t.selectMode}</h2>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div
+          className={`grid gap-6 mx-auto ${
+            modes.length === 1
+              ? 'grid-cols-1 max-w-md'
+              : modes.length === 2
+              ? 'grid-cols-1 md:grid-cols-2 max-w-3xl'
+              : 'grid-cols-1 md:grid-cols-3 max-w-5xl'
+          }`}
+        >
           {modes.map((mode) => {
             const Icon = mode.icon;
             return (
@@ -1278,7 +1286,7 @@ export default function Clawzone() {
                 <CheckCircle2 className="w-16 h-16 text-emerald-500" />
                 <h3 className="text-2xl font-bold text-gray-900">{'🎉 Booking Received!'}</h3>
                 <p className="text-gray-600 text-sm leading-6">
-                  {'A confirmation email has been sent. Please complete the $200 CAD E-transfer deposit within 24 hours.'}
+                  {`A confirmation email has been sent. Please complete the ${selectedMode === 'private' ? '$100' : '$200'} CAD E-transfer deposit within 24 hours.`}
                 </p>
                 {bookingId && (
                   <div className="bg-pink-50 rounded-2xl px-6 py-3 border border-pink-200">
@@ -1492,7 +1500,7 @@ export default function Clawzone() {
                   className="mt-1 h-4 w-4"
                 />
                 <span>
-                  {'I have read and agree to the Private Party terms and details'}
+                  {'I have read and agree to the Party Terms & Details'}
                   {agreedTermsAt && (
                     <span className="block text-xs text-gray-500 mt-1">
                       {`Accepted at: ${agreedTermsAt}`}
@@ -1559,6 +1567,7 @@ export default function Clawzone() {
         </a>
       </div>
 
+      {/* Footer */}
       {/* Footer */}
       <footer className="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-12">
         <div className="max-w-6xl mx-auto px-6 text-center">
