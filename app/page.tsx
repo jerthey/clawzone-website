@@ -53,7 +53,7 @@ const translations = {
     unlimitedDetail: "Entire arcade access for your party. Unlimited token play for 1 hour and 15 minutes, plus prizes for every player.",
     privateDetail: "Private room for up to 10 people. Includes free tokens, table & chairs, and Nintendo Switch 2 console.",
     selectDate: "Select Party Date",
-    green: "Green = Available • Red = Fully Booked • Gray = Unavailable. Dates with \"Unlimited Play-Full\" or \"Private Room-Full\" label still have the other mode available.",
+    green: "Green = Available • Red = Fully Booked • Gray = Unavailable. Orange \"Pending Payment\" = someone is paying deposit (slots block until 24h auto-release).",
     book: "Book Now",
     later: "Choose Later",
     people: "People",
@@ -194,7 +194,7 @@ export default function Clawzone() {
   const [availableTimes, setAvailableTimes] = useState<string[]>(['10:00 - 12:00']);
   const [bigPhoto, setBigPhoto] = useState<string | null>(null);
   const [now, setNow] = useState<Date | null>(null);
-  const [bookedSlots, setBookedSlots] = useState<{date: string; time: string; mode: string}[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<{date: string; time: string; mode: string; status: string}[]>([]);
   const [showWeekHoursMobile, setShowWeekHoursMobile] = useState(false);
   const [displayedMonth, setDisplayedMonth] = useState(() => {
     const d = new Date();
@@ -512,21 +512,54 @@ export default function Clawzone() {
     }
   };
 
-  // Check if a specific time slot for a given date is already booked (Confirmed)
+  // Get the status of a time slot for a given date (or null if not in bookedSlots)
+  const getSlotStatus = (dateStr: string, time: string): string | null => {
+    const slot = bookedSlots.find(b => b.date === dateStr && b.time === time);
+    return slot ? slot.status : null;
+  };
+
+  // Check if a slot is in the past (only relevant for today)
+  const isPastTimeSlot = (dateStr: string, time: string): boolean => {
+    const today = now ?? new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    if (dateStr !== todayStr) return false;
+    const [startHour, startMin] = time.split(' - ')[0].split(':').map(Number);
+    const currentMinutes = today.getHours() * 60 + today.getMinutes();
+    return currentMinutes >= startHour * 60 + startMin;
+  };
+
+  // Check if a specific time slot is booked (Confirmed OR Pending Deposit — both block other customers)
   const isSlotBooked = (dateStr: string, time: string): boolean => {
     return bookedSlots.some(b => b.date === dateStr && b.time === time);
   };
 
-  // Check if every slot for a specific MODE is booked (uses raw, unfiltered slots)
-  const isModeFullyBooked = (dateStr: string, mode: 'unlimited' | 'private'): boolean => {
+  // Check if a slot is specifically Confirmed (more permanent than Pending)
+  const isSlotConfirmed = (dateStr: string, time: string): boolean => {
+    return bookedSlots.some(b => b.date === dateStr && b.time === time && b.status === 'Confirmed');
+  };
+
+  // Check if every slot for a specific MODE is fully Confirmed (red label "Mode-Full")
+  const isModeFullyConfirmed = (dateStr: string, mode: 'unlimited' | 'private'): boolean => {
+    const raw = getRawTimeSlots(dateStr, mode);
+    if (raw.length === 0) return false;
+    return raw.every(slot => isSlotConfirmed(dateStr, slot));
+  };
+
+  // Check if every slot for a specific MODE is blocked (Confirmed OR Pending — no slots left to book)
+  const isModeFullyBlocked = (dateStr: string, mode: 'unlimited' | 'private'): boolean => {
     const raw = getRawTimeSlots(dateStr, mode);
     if (raw.length === 0) return false;
     return raw.every(slot => isSlotBooked(dateStr, slot));
   };
 
-  // A date is "fully booked" (red) only if BOTH modes are fully booked
+  // A date is "fully blocked" (red) only if BOTH modes have no available slots left
   const isDateFullyBooked = (dateStr: string): boolean => {
-    return isModeFullyBooked(dateStr, 'unlimited') && isModeFullyBooked(dateStr, 'private');
+    return isModeFullyBlocked(dateStr, 'unlimited') && isModeFullyBlocked(dateStr, 'private');
+  };
+
+  // Check if any pending payment exists for this date (in any mode)
+  const hasPendingOnDate = (dateStr: string): boolean => {
+    return bookedSlots.some(b => b.date === dateStr && b.status === 'Pending Deposit');
   };
 
   const renderCalendar = () => {
@@ -553,8 +586,9 @@ export default function Clawzone() {
       // If it's today, check if all time slots have passed
       const isTodayWithNoSlots = dateStr === formatDateLocal(todayStart) && getAvailableTimes(dateStr).length === 0;
       const fullyBooked = isDateFullyBooked(dateStr);
-      const unlimitedBooked = isModeFullyBooked(dateStr, 'unlimited');
-      const privateBooked = isModeFullyBooked(dateStr, 'private');
+      const unlimitedConfirmed = isModeFullyConfirmed(dateStr, 'unlimited');
+      const privateConfirmed = isModeFullyConfirmed(dateStr, 'private');
+      const hasPending = hasPendingOnDate(dateStr);
       const isDisabled = isMondayClosed || isPastDate || isTodayWithNoSlots || fullyBooked;
 
       let cellClass: string;
@@ -566,10 +600,19 @@ export default function Clawzone() {
         cellClass = 'bg-emerald-400 hover:bg-emerald-500 text-white cursor-pointer';
       }
 
-      // Mode-specific label when only ONE mode is fully booked
+      // Label priority: Confirmed-Full (red) > Pending Payment (orange)
       let bookedLabel: string | null = null;
-      if (!fullyBooked && unlimitedBooked) bookedLabel = 'Unlimited Play-Full';
-      else if (!fullyBooked && privateBooked) bookedLabel = 'Private Room-Full';
+      let labelClass = '';
+      if (!fullyBooked && unlimitedConfirmed) {
+        bookedLabel = 'Unlimited Play-Full';
+        labelClass = 'text-red-600 bg-white/95';
+      } else if (!fullyBooked && privateConfirmed) {
+        bookedLabel = 'Private Room-Full';
+        labelClass = 'text-red-600 bg-white/95';
+      } else if (!fullyBooked && hasPending) {
+        bookedLabel = 'Pending Payment';
+        labelClass = 'text-orange-600 bg-white/95';
+      }
 
       calendarCells.push(
         <div
@@ -579,7 +622,7 @@ export default function Clawzone() {
         >
           <div className="text-xl">{day}</div>
           {bookedLabel && (
-            <div className="text-[10px] mt-0.5 leading-tight font-extrabold text-red-600 bg-white/95 px-1.5 py-0.5 rounded">{bookedLabel}</div>
+            <div className={`text-[10px] mt-0.5 leading-tight font-extrabold px-1.5 py-0.5 rounded ${labelClass}`}>{bookedLabel}</div>
           )}
         </div>
       );
@@ -1485,7 +1528,16 @@ export default function Clawzone() {
                 </div>
               )}
               <select value={time} onChange={(e) => setTime(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900">
-                {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
+                {getRawTimeSlots(selectedDate, selectedMode).map(t => {
+                  const status = getSlotStatus(selectedDate, t);
+                  const past = isPastTimeSlot(selectedDate, t);
+                  const disabled = !!status || past;
+                  let label = t;
+                  if (status === 'Confirmed') label += ' (Booked)';
+                  else if (status === 'Pending Deposit') label += ' (Pending Payment)';
+                  else if (past) label += ' (Past)';
+                  return <option key={t} value={t} disabled={disabled}>{label}</option>;
+                })}
               </select>
 
               <label className="flex items-start gap-3 text-sm text-gray-700">
