@@ -53,7 +53,7 @@ const translations = {
     unlimitedDetail: "Entire arcade access for your party. Unlimited token play for 1 hour and 15 minutes, plus prizes for every player.",
     privateDetail: "Private room for up to 10 people. Includes free tokens, table & chairs, and Nintendo Switch 2 console.",
     selectDate: "Select Party Date",
-    green: "Green = Available • Red = Fully Booked • Gray = Unavailable",
+    green: "Green = Available • Red = Fully Booked • Gray = Unavailable. Dates with \"Unlimited Full\" or \"Private Full\" label still have other mode available.",
     book: "Book Now",
     later: "Choose Later",
     people: "People",
@@ -353,26 +353,26 @@ export default function Clawzone() {
     return `${y}-${m}-${d}`;
   };
 
-  const getAvailableTimes = (dateStr: string, mode: string = 'unlimited'): string[] => {
+  // Raw mode-specific slots (no filtering applied — used for fully-booked detection)
+  const getRawTimeSlots = (dateStr: string, mode: string): string[] => {
     const [year, month, day] = dateStr.split('-').map(Number);
     const date = new Date(year, month - 1, day);
     const weekday = date.getDay();
     const isHoliday = bcHolidays2026.includes(dateStr);
 
-    let times: string[] = [];
-    if (weekday === 1 && !isHoliday) {
-      times = []; // Closed
-    } else if (mode === 'private') {
-      // Private Party Room (per PDF page 3 + weekday extension)
-      if (weekday === 6) times = ['13:00 - 15:00', '15:30 - 17:30', '18:00 - 20:00'];
-      else if (weekday === 0 || isHoliday) times = ['13:00 - 15:00', '15:30 - 17:30'];
-      else times = ['15:30 - 17:30', '18:00 - 20:00']; // Tue-Fri
-    } else {
-      // Unlimited Token Play Party (per PDF page 2)
-      if (weekday === 6) times = ['10:00 - 12:00'];
-      else if (weekday === 0 || isHoliday) times = ['10:00 - 12:00', '18:15 - 20:15'];
-      else times = ['10:00 - 12:00', '13:00 - 15:00']; // Tue-Fri
+    if (weekday === 1 && !isHoliday) return [];
+    if (mode === 'private') {
+      if (weekday === 6) return ['13:00 - 15:00', '15:30 - 17:30', '18:00 - 20:00'];
+      if (weekday === 0 || isHoliday) return ['13:00 - 15:00', '15:30 - 17:30'];
+      return ['15:30 - 17:30', '18:00 - 20:00']; // Tue-Fri
     }
+    if (weekday === 6) return ['10:00 - 12:00'];
+    if (weekday === 0 || isHoliday) return ['10:00 - 12:00', '18:15 - 20:15'];
+    return ['10:00 - 12:00', '13:00 - 15:00']; // Tue-Fri
+  };
+
+  const getAvailableTimes = (dateStr: string, mode: string = 'unlimited'): string[] => {
+    let times = getRawTimeSlots(dateStr, mode);
 
     // Filter out past time slots if it's today
     const today = now ?? new Date();
@@ -392,11 +392,23 @@ export default function Clawzone() {
   };
 
   const openBookingModal = (dateStr: string) => {
-    const modeForSlots = selectedMode || 'unlimited';
+    // Find a mode that still has slots — prefer current selection if available
+    const currentMode = selectedMode || 'unlimited';
+    const currentHasSlots = getAvailableTimes(dateStr, currentMode).length > 0;
+    const modeForSlots = currentHasSlots ? currentMode : (modes.find(m => getAvailableTimes(dateStr, m.id).length > 0)?.id || currentMode);
     const times = getAvailableTimes(dateStr, modeForSlots);
+
     if (times.length === 0) {
-      alert('😔 This is a regular Monday, store is closed.');
+      // Truly nothing available across all modes
+      const [yy, mm, dd] = dateStr.split('-').map(Number);
+      const weekday = new Date(yy, mm - 1, dd).getDay();
+      alert(weekday === 1 && !bcHolidays2026.includes(dateStr) ? '😔 Mondays are closed (except holidays).' : '😔 No available time slots left for any party type on this date.');
       return;
+    }
+
+    // If we had to switch the mode, update selectedMode so the form reflects it
+    if (modeForSlots !== currentMode) {
+      setSelectedMode(modeForSlots);
     }
 
     const isSameDate = selectedDate === dateStr;
@@ -505,13 +517,16 @@ export default function Clawzone() {
     return bookedSlots.some(b => b.date === dateStr && b.time === time);
   };
 
-  // A date is "fully booked" (red) if every slot across BOTH modes is in bookedSlots
+  // Check if every slot for a specific MODE is booked (uses raw, unfiltered slots)
+  const isModeFullyBooked = (dateStr: string, mode: 'unlimited' | 'private'): boolean => {
+    const raw = getRawTimeSlots(dateStr, mode);
+    if (raw.length === 0) return false;
+    return raw.every(slot => isSlotBooked(dateStr, slot));
+  };
+
+  // A date is "fully booked" (red) only if BOTH modes are fully booked
   const isDateFullyBooked = (dateStr: string): boolean => {
-    const unlimited = getAvailableTimes(dateStr, 'unlimited');
-    const private_ = getAvailableTimes(dateStr, 'private');
-    const allSlots = [...new Set([...unlimited, ...private_])];
-    if (allSlots.length === 0) return false;
-    return allSlots.every(slot => isSlotBooked(dateStr, slot));
+    return isModeFullyBooked(dateStr, 'unlimited') && isModeFullyBooked(dateStr, 'private');
   };
 
   const renderCalendar = () => {
@@ -538,6 +553,8 @@ export default function Clawzone() {
       // If it's today, check if all time slots have passed
       const isTodayWithNoSlots = dateStr === formatDateLocal(todayStart) && getAvailableTimes(dateStr).length === 0;
       const fullyBooked = isDateFullyBooked(dateStr);
+      const unlimitedBooked = isModeFullyBooked(dateStr, 'unlimited');
+      const privateBooked = isModeFullyBooked(dateStr, 'private');
       const isDisabled = isMondayClosed || isPastDate || isTodayWithNoSlots || fullyBooked;
 
       let cellClass: string;
@@ -549,13 +566,21 @@ export default function Clawzone() {
         cellClass = 'bg-emerald-400 hover:bg-emerald-500 text-white cursor-pointer';
       }
 
+      // Mode-specific label when only ONE mode is fully booked
+      let bookedLabel: string | null = null;
+      if (!fullyBooked && unlimitedBooked) bookedLabel = 'Unlimited Full';
+      else if (!fullyBooked && privateBooked) bookedLabel = 'Private Full';
+
       calendarCells.push(
         <div
           key={day}
           onClick={() => !isDisabled && openBookingModal(dateStr)}
-          className={`p-4 rounded-2xl text-xl font-semibold text-center transition-all ${cellClass}`}
+          className={`p-3 rounded-2xl font-semibold text-center transition-all ${cellClass} flex flex-col items-center justify-center min-h-[60px]`}
         >
-          {day}
+          <div className="text-xl">{day}</div>
+          {bookedLabel && (
+            <div className="text-[10px] mt-0.5 leading-tight font-extrabold text-red-600 bg-white/95 px-1.5 py-0.5 rounded">{bookedLabel}</div>
+          )}
         </div>
       );
     }
@@ -1144,7 +1169,7 @@ export default function Clawzone() {
                           </tr>
                           <tr className="bg-pink-50">
                             <th className="border-2 border-[#3a3aa0]/30 px-2 pb-2 text-xs font-medium text-[#3a3aa0]">10 a–12 p</th>
-                            <th className="border-2 border-[#3a3aa0]/30 px-2 pb-2 text-xs font-medium text-[#3a3aa0]">10 a–12 p <span className="font-bold">OR</span><br/>6–8 p</th>
+                            <th className="border-2 border-[#3a3aa0]/30 px-2 pb-2 text-xs font-medium text-[#3a3aa0]">10 a–12 p <span className="font-bold">OR</span><br/>6:15–8:15 p</th>
                             <th className="border-2 border-[#3a3aa0]/30 px-2 pb-2 text-xs font-medium text-[#3a3aa0]">10 a–12 p<br/><span className="font-bold">OR</span> 1–3 p</th>
                           </tr>
                         </thead>
