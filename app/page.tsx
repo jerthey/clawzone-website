@@ -175,6 +175,7 @@ export default function Clawzone() {
   const [selectedMode, setSelectedMode] = useState('');
   const [people, setPeople] = useState(10);
   const [extraPlayers, setExtraPlayers] = useState(0);
+  const [selectedPackage, setSelectedPackage] = useState<'' | 'A' | 'B'>('');
   const [isBirthdayCelebration, setIsBirthdayCelebration] = useState(false);
   const [birthdayGender, setBirthdayGender] = useState('');
   const [birthdayName, setBirthdayName] = useState('');
@@ -326,6 +327,8 @@ export default function Clawzone() {
       if (people > mode.max) setPeople(mode.max);
     }
     setExtraPlayers(0);
+    // Reset package selection when switching away from Private
+    if (selectedMode !== 'private') setSelectedPackage('');
   }, [selectedMode]);
 
   // Refresh available time slots when mode or date changes inside booking modal
@@ -421,6 +424,7 @@ export default function Clawzone() {
       setTime(times[0]);
       setPeople(10);
       setExtraPlayers(0);
+      setSelectedPackage('');
       setIsBirthdayCelebration(false);
       setBirthdayGender('');
       setBirthdayName('');
@@ -472,6 +476,11 @@ export default function Clawzone() {
       setError('Please select an activity mode');
       return;
     }
+    // For Private Party Room: must pick Package A or B
+    if (selectedMode === 'private' && !selectedPackage) {
+      setError('Please choose Package A or Package B for Private Party Room.');
+      return;
+    }
     // Validate time is a real available slot for this date+mode
     const validTimes = getAvailableTimes(selectedDate, selectedMode);
     if (validTimes.length === 0) {
@@ -491,9 +500,18 @@ export default function Clawzone() {
       return;
     }
 
-    const modeName = modes.find(m => m.id === selectedMode)?.name || '';
+    const baseModeName = modes.find(m => m.id === selectedMode)?.name || '';
+    const packageSuffix = selectedMode === 'private' && selectedPackage
+      ? ` — Package ${selectedPackage} (${selectedPackage === 'A' ? 'Starter Claw $139' : 'Ultimate Claw $229'})`
+      : '';
+    const modeName = baseModeName + packageSuffix;
+    const estimatedPrice = selectedMode === 'private' && selectedPackage
+      ? (selectedPackage === 'A' ? 139 : 229)
+      : 0;
     const bookingData = {
       selectedDate, time, selectedMode, modeName, people, extraPlayers,
+      packageChoice: selectedPackage || null,
+      estimatedPrice,
       hostName,
       birthdayCelebration: isBirthdayCelebration,
       birthdayGender: isBirthdayCelebration ? birthdayGender : null,
@@ -1343,6 +1361,11 @@ export default function Clawzone() {
                 <p className="text-gray-600 text-sm leading-6">
                   {`A confirmation email has been sent. Please complete the ${selectedMode === 'private' ? '$100' : '$200'} CAD E-transfer deposit within 24 hours.`}
                 </p>
+                <p className="text-orange-600 text-xs leading-5 font-semibold bg-orange-50 px-3 py-2 rounded-xl border border-orange-200">
+                  📬 Don't see our email? Please check your <strong>Spam</strong> or <strong>Junk</strong> folder and mark it as "Not Spam" so future messages reach your inbox.
+                </p>
+                <p className="hidden">
+                </p>
                 {bookingId && (
                   <div className="bg-pink-50 rounded-2xl px-6 py-3 border border-pink-200">
                     <p className="text-xs text-gray-500 mb-1">{'Booking ID (use as E-transfer note)'}</p>
@@ -1447,26 +1470,17 @@ export default function Clawzone() {
 
               <input type="tel" placeholder={`${t.phone} *`} value={formatPhoneDisplay(rawPhone)} onChange={(e) => setRawPhone(e.target.value.replace(/\D/g, '').slice(0, 10))} className="w-full border rounded-xl px-4 py-3 text-gray-900" required />
               <input type="email" placeholder={`${t.email} *`} value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900" required />
-              {selectedMode === 'unlimited' ? (
+
+              {selectedMode === 'unlimited' && (
                 <div className="space-y-3">
                   <div className="rounded-xl border p-3">
-                    <label className="text-sm font-semibold text-gray-700 block mb-2">
-                      {'Group Size'}
-                    </label>
+                    <label className="text-sm font-semibold text-gray-700 block mb-2">{'Group Size'}</label>
                     <select
-                      value={
-                        people >= 20 ? 20 :
-                        people === 15 ? 15 :
-                        people === 10 ? 10 :
-                        9 /* 1-9 bucket */
-                      }
+                      value={people >= 20 ? 20 : people === 15 ? 15 : people === 10 ? 10 : 9}
                       onChange={(e) => {
                         const v = Number(e.target.value);
-                        if (v === 9) {
-                          setPeople(2); // default within 1-9 range
-                        } else {
-                          setPeople(v);
-                        }
+                        if (v === 9) setPeople(2);
+                        else setPeople(v);
                         setExtraPlayers(0);
                       }}
                       className="w-full border rounded-xl px-4 py-3 text-gray-900"
@@ -1476,14 +1490,10 @@ export default function Clawzone() {
                       <option value={15}>15</option>
                       <option value={20}>20</option>
                     </select>
-                    </div>
-
-                  {/* 1–9 bucket: ask exact count */}
+                  </div>
                   {people < 10 && (
                     <div className="rounded-xl border p-3">
-                      <label className="text-sm font-semibold text-gray-700 block mb-2">
-                        {'Exact number of players (1–9)'}
-                      </label>
+                      <label className="text-sm font-semibold text-gray-700 block mb-2">{'Exact number of players (1–9)'}</label>
                       <input
                         type="number"
                         value={people}
@@ -1496,22 +1506,15 @@ export default function Clawzone() {
                       <p className="text-xs text-gray-500 mt-2">1–9 players use the same 10 player package price.</p>
                     </div>
                   )}
-
-                  {/* 20+ bucket: extra players */}
                   {people >= 20 && (
                     <div className="rounded-xl border p-3">
-                      <p className="text-sm font-semibold text-gray-700 mb-2">
-                        {'Extra Players (only available when 20 is selected, max 24)'}
-                      </p>
+                      <p className="text-sm font-semibold text-gray-700 mb-2">{'Extra Players (only available when 20 is selected, max 24)'}</p>
                       <div className="flex flex-wrap gap-2">
                         {[0, 1, 2, 3, 4].map((v) => (
                           <button
                             key={v}
                             type="button"
-                            onClick={() => {
-                              setExtraPlayers(v);
-                              setPeople(20 + v);
-                            }}
+                            onClick={() => { setExtraPlayers(v); setPeople(20 + v); }}
                             className={`px-3 py-1.5 rounded-full border text-sm ${extraPlayers === v ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-700 border-gray-300'}`}
                           >
                             {v === 0 ? 'No Extra' : `+${v}`}
@@ -1520,25 +1523,88 @@ export default function Clawzone() {
                       </div>
                     </div>
                   )}
-
-                  <p className="text-sm text-gray-600">
-                    {`Total players: ${people}`}
-                  </p>
-                </div>
-              ) : (
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={people}
-                    onChange={(e) => setPeople(Number(e.target.value))}
-                    min={modes.find(m => m.id === selectedMode)?.min || 1}
-                    max={modes.find(m => m.id === selectedMode)?.max || 24}
-                    className="w-full border rounded-xl px-4 py-3 text-gray-900 pr-16"
-                    required
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">{t.people}</span>
+                  <p className="text-sm text-gray-600">{`Total players: ${people}`}</p>
                 </div>
               )}
+
+              {selectedMode === 'private' && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 block mb-2">
+                      Choose Your Package
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedPackage('A'); if (people > 5) setPeople(5); }}
+                        className={`text-left rounded-xl border-2 p-3 transition-all ${selectedPackage === 'A' ? 'border-pink-500 bg-pink-50 shadow-md' : 'border-gray-200 hover:border-pink-300'}`}
+                      >
+                        <p className="text-xs font-bold text-pink-500 uppercase tracking-wide">Package A</p>
+                        <p className="text-base font-extrabold text-gray-900 mt-0.5">Starter Claw</p>
+                        <p className="text-xl font-black text-pink-600 mt-1">$139 <span className="text-xs font-bold text-gray-600">+ GST</span></p>
+                        <p className="text-xs text-gray-600 italic mt-0.5">Up to 5 people</p>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedPackage('B'); }}
+                        className={`text-left rounded-xl border-2 p-3 transition-all ${selectedPackage === 'B' ? 'border-violet-500 bg-violet-50 shadow-md' : 'border-gray-200 hover:border-violet-300'}`}
+                      >
+                        <p className="text-xs font-bold text-violet-500 uppercase tracking-wide">Package B</p>
+                        <p className="text-base font-extrabold text-gray-900 mt-0.5">Ultimate Claw</p>
+                        <p className="text-xl font-black text-violet-600 mt-1">$229 <span className="text-xs font-bold text-gray-600">+ GST</span></p>
+                        <p className="text-xs text-gray-600 italic mt-0.5">Up to 10 people</p>
+                      </button>
+                    </div>
+                  </div>
+
+                  {selectedPackage && (
+                    <div className={`rounded-xl border-2 p-3 ${selectedPackage === 'A' ? 'border-pink-200 bg-pink-50/40' : 'border-violet-200 bg-violet-50/40'}`}>
+                      <p className="text-xs font-bold text-gray-700 mb-2">✓ Package {selectedPackage} includes:</p>
+                      <ul className="text-xs text-gray-700 space-y-1 list-disc list-inside leading-5">
+                        {selectedPackage === 'A' ? (
+                          <>
+                            <li>40 free tokens</li>
+                            <li>Keep all your catches</li>
+                            <li>Private Party Room with table & chairs</li>
+                            <li>Better day-of token rates</li>
+                            <li>Nintendo Switch 2 console with games</li>
+                          </>
+                        ) : (
+                          <>
+                            <li>80 free tokens</li>
+                            <li>Keep all your catches</li>
+                            <li>1 custom goodie bag</li>
+                            <li>Private Party Room with table & chairs</li>
+                            <li>Better day-of token rates</li>
+                            <li>Nintendo Switch 2 console with games</li>
+                          </>
+                        )}
+                      </ul>
+                      <p className="text-xs text-orange-700 bg-orange-50 px-2 py-1.5 rounded-lg mt-2 leading-5">
+                        💡 Need more tokens? Purchase additional tokens at a discounted rate during your event!
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedPackage && (
+                    <div className="rounded-xl border p-3">
+                      <label className="text-sm font-semibold text-gray-700 block mb-2">
+                        Number of People (1–{selectedPackage === 'A' ? 5 : 10})
+                      </label>
+                      <input
+                        type="number"
+                        value={people}
+                        onChange={(e) => setPeople(Math.max(1, Math.min(selectedPackage === 'A' ? 5 : 10, Number(e.target.value) || 1)))}
+                        min={1}
+                        max={selectedPackage === 'A' ? 5 : 10}
+                        className="w-full border rounded-xl px-4 py-3 text-gray-900"
+                        required
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               <select value={time} onChange={(e) => setTime(e.target.value)} className="w-full border rounded-xl px-4 py-3 text-gray-900">
                 {getRawTimeSlots(selectedDate, selectedMode).map(t => {
                   const status = getSlotStatus(selectedDate, t);
@@ -1577,10 +1643,16 @@ export default function Clawzone() {
               {(() => {
                 const validTimes = selectedDate && selectedMode ? getAvailableTimes(selectedDate, selectedMode) : [];
                 const hasValidTime = !!time && validTimes.includes(time);
-                const canSubmit = agreedTerms && hasValidTime;
+                const needsPackage = selectedMode === 'private' && !selectedPackage;
+                const canSubmit = agreedTerms && hasValidTime && !needsPackage;
                 return (
                   <>
-                    {!hasValidTime && selectedMode && (
+                    {needsPackage && (
+                      <p className="text-orange-600 text-center text-sm font-semibold">
+                        ⚠ Please choose Package A or Package B above
+                      </p>
+                    )}
+                    {!hasValidTime && selectedMode && !needsPackage && (
                       <p className="text-orange-600 text-center text-sm font-semibold">
                         {validTimes.length === 0
                           ? '⚠ No time slots available — try another mode or date'
@@ -1647,7 +1719,6 @@ export default function Clawzone() {
         </a>
       </div>
 
-      {/* Footer */}
       {/* Footer */}
       <footer className="bg-gradient-to-r from-pink-600 to-purple-600 text-white py-12">
         <div className="max-w-6xl mx-auto px-6 text-center">
